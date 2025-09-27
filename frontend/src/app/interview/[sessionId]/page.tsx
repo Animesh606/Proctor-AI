@@ -37,7 +37,6 @@ export default function InterviewRoom() {
                 console.log("Connected to WebSocket");
 
                 client.subscribe(`/topic/interview/${sessionId}`, (message) => {
-                    console.log(message);
                     const msg: ChatMessage = JSON.parse(message.body);
                     setMessages((prev) => [...prev, msg]);
                 });
@@ -60,7 +59,7 @@ export default function InterviewRoom() {
         e.preventDefault();
         if (inputText.trim() && stompClient.current?.connected) {
             const chatMessage: ChatMessage = {
-                from: user?.sub || "user",
+                from: "user",
                 text: inputText,
             };
 

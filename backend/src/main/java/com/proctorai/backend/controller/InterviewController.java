@@ -1,6 +1,9 @@
 package com.proctorai.backend.controller;
 
 import com.proctorai.backend.dto.ChatMessage;
+import com.proctorai.backend.service.GeminiServiceClient;
+import com.proctorai.backend.service.InterviewSessionManager;
+import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -11,45 +14,37 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Controller
+@RequiredArgsConstructor
 public class InterviewController {
 
     private final SimpMessageSendingOperations messagingTemplate;
-
-    private final Map<String, Integer> userQuestionState = new ConcurrentHashMap<>();
-    private final String[] questions = {
-            "Welcome to Proctor AI! Let's begin. Tell me about a challenging project you've worked on.",
-            "Interesting. What was your specific role in that project?",
-            "What was the most difficult technical challenge you faced, and how did you solve it?",
-            "Thank you for sharing. That concludes our session for now."
-    };
-
-    public InterviewController(SimpMessageSendingOperations messagingTemplate) {
-        this.messagingTemplate = messagingTemplate;
-    }
+    private final GeminiServiceClient geminiServiceClient;
+    private final InterviewSessionManager sessionManager;
 
     @MessageMapping("/interview.start")
     public void startInterview(SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-        userQuestionState.put(sessionId, 0);
+        if (sessionId == null) return;
+
+        String initialPrompt = "You are 'Proctor', an expert technical interviewer from a top tech company. Your goal is to conduct a 15-minute interview for a 'Java Backend Developer' role for a fresher. You must ask a mix of technical, coding, and behavioral questions. Start with a friendly introduction and then ask your first question. Do not use markdown in your responses.";
+        sessionManager.startSession(sessionId, initialPrompt);
         sendQuestionToUser(sessionId);
     }
 
     @MessageMapping("/interview.sendMessage")
     public void sendMessage(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor headerAccessor) {
         String sessionId = headerAccessor.getSessionId();
-        Integer currentQuestion = userQuestionState.getOrDefault(sessionId, 0);
-        userQuestionState.put(sessionId, currentQuestion + 1);
+        if (sessionId == null) return;
+
+        sessionManager.addMessage(sessionId, new ChatMessage("user", chatMessage.getText()));
         sendQuestionToUser(sessionId);
     }
 
     private void sendQuestionToUser(String sessionId) {
-        Integer questionIndex = userQuestionState.get(sessionId);
-        if(questionIndex != null && questionIndex < questions.length) {
-            ChatMessage botMessage = ChatMessage.builder()
-                    .from("Proctor")
-                    .text(questions[questionIndex])
-                    .build();
+        geminiServiceClient.getNextQuestion(sessionManager.getHistory(sessionId)).subscribe(aiResponse -> {
+            ChatMessage botMessage = new ChatMessage("Proctor", aiResponse);
+            sessionManager.addMessage(sessionId, botMessage);
             messagingTemplate.convertAndSend("/topic/interview/" + sessionId, botMessage);
-        }
+        });
     }
 }
