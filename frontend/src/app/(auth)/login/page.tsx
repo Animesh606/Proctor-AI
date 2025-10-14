@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { login as loginService } from "@/services/authService";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -19,13 +19,19 @@ export default function LoginPage() {
         try {
             const data = await loginService({ email, password });
             login(data.token);
-            router.push(`/interview/${crypto.randomUUID()}`);
+            router.push(`/dashboard`);
         } catch (error) {
             setError(
                 "Login failed. Please check your credentials and try again."
             );
         }
     };
+
+    useEffect(() => {
+        if (user) {
+            router.push("/dashboard");
+        }
+    }, [user, router]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -71,7 +77,7 @@ export default function LoginPage() {
                         type="submit"
                         className="w-full px-4 py-2 font-bold text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                        Login & Start Interview
+                        Login
                     </button>
                 </form>
                 <p className="text-center">

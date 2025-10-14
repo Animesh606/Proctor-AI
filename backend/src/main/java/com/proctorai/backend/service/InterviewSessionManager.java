@@ -24,7 +24,7 @@ public class InterviewSessionManager {
     }
 
     public List<ChatMessage> getHistory(String sessionId) {
-        return activeSession.getOrDefault(sessionId, new  ArrayList<>());
+        return activeSession.getOrDefault(sessionId, new ArrayList<>());
     }
 
     public void addMessage(String sessionId, ChatMessage chatMessage) {

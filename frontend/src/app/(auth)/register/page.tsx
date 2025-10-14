@@ -11,8 +11,12 @@ export default function Register() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
-    const { login } = useAuth();
+    const { login, user } = useAuth();
     const router = useRouter();
+
+    if (user) {
+        router.push("/dashboard");
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
