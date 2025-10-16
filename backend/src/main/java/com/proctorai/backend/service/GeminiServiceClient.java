@@ -54,4 +54,29 @@ public class GeminiServiceClient {
                     return Mono.just("There was an error processing your request. Please try again.");
                 });
     }
+
+    public Mono<String> generateFeedback(String prompt) {
+        GeminiRequest request = new GeminiRequest(
+                List.of(new Content("user", List.of(new Part(prompt))))
+        );
+
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1beta/models/{model}:generateContent")
+                        .queryParam("key", apiKey)
+                        .build(apiModel))
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(GeminiResponse.class)
+                .map(response -> {
+                    if (response != null && response.candidates() != null && !response.candidates().isEmpty()) {
+                        return response.candidates().getFirst().content().parts().getFirst().text();
+                    }
+                    return "{}";
+                })
+                .onErrorResume(e -> {
+                    System.err.println("Error calling Gemini API for feedback: " + e.getMessage());
+                    return Mono.just("{\"error\": \"Failed to generate feedback.\"}");
+                });
+    }
 }

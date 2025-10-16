@@ -44,16 +44,21 @@ public class InterviewController {
 
         UUID interviewId = UUID.fromString(interviewIdStr);
         interviewSessionRepository.findById(interviewId).ifPresent(sessionDetails -> {
-            sessionDetails.setStatus(InterviewSession.SessionStatus.IN_PROGRESS);
-            interviewSessionRepository.save(sessionDetails);
-            String initialPrompt = String.format(
-                    "You are 'Proctor', an expert technical interviewer from a top tech company. Your tone is professional, encouraging and sharp. Your goal is to conduct a %d-minute interview for a '%s' role for a '%s' candidate. If the user provided special instructions, adhere to them: '%s'. Start with a friendly introduction.",
-                    sessionDetails.getDurationMinutes(), sessionDetails.getInterviewType(), sessionDetails.getExperienceLevel(), sessionDetails.getCustomRequirements()
-            );
-            sessionManager.startSession(sessionId, initialPrompt);
-        });
+            if (sessionDetails.getStatus() == InterviewSession.SessionStatus.SCHEDULED) {
+                sessionDetails.setStatus(InterviewSession.SessionStatus.IN_PROGRESS);
+                interviewSessionRepository.save(sessionDetails);
+                String initialPrompt = String.format(
+                        "You are 'Proctor', an expert technical interviewer from a top tech company. Your tone is professional, encouraging and sharp. Your goal is to conduct a %d-minute interview for a '%s' role for a '%s' candidate. If the user provided special instructions, adhere to them: '%s'. Start with a friendly introduction. Do not add any markdown just use simple text.",
+                        sessionDetails.getDurationMinutes(), sessionDetails.getInterviewType(), sessionDetails.getExperienceLevel(), sessionDetails.getCustomRequirements()
+                );
+                sessionManager.startSessionByInterviewId(sessionId, interviewIdStr, initialPrompt);
 
-        sendQuestionToUser(sessionId, interviewIdStr);
+            }
+            else {
+                System.out.print("Ignoring duplicate start requests for already running or completed session: " + interviewIdStr);
+            }
+            sendQuestionToUser(sessionId, interviewIdStr);
+        });
     }
 
     @MessageMapping("/interview.sendMessage")
@@ -68,7 +73,7 @@ public class InterviewController {
     }
 
     private void sendQuestionToUser(String sessionId, String interviewId) {
-        geminiServiceClient.getNextQuestion(sessionManager.getHistory(sessionId)).subscribe(aiResponse -> {
+        geminiServiceClient.getNextQuestion(sessionManager.getHistoryByWsSessionId(sessionId)).subscribe(aiResponse -> {
             ChatMessage botMessage = new ChatMessage("Proctor", aiResponse);
             sessionManager.addMessage(sessionId, botMessage);
             messagingTemplate.convertAndSend("/topic/interview/" + interviewId, botMessage);

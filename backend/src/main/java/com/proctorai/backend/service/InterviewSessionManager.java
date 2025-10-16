@@ -12,19 +12,32 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InterviewSessionManager {
 
     private final Map<String, List<ChatMessage>> activeSession = new ConcurrentHashMap<>();
+    private final Map<String, String> interviewIdToSessionId = new ConcurrentHashMap<>();
 
-    public void startSession(String sessionId, String initialPrompt) {
+    public void startSessionByInterviewId(String sessionId, String interviewId, String initialPrompt) {
         List<ChatMessage> history = new ArrayList<>();
         history.add(new ChatMessage("user", initialPrompt));
         activeSession.put(sessionId, history);
+        interviewIdToSessionId.put(interviewId, sessionId);
     }
 
-    public void endSession(String sessionId) {
-        activeSession.remove(sessionId);
+    public void endSessionByInterviewId(String interviewId) {
+        String sessionId = interviewIdToSessionId.remove(interviewId);
+        if(sessionId != null) {
+            activeSession.remove(sessionId);
+        }
     }
 
-    public List<ChatMessage> getHistory(String sessionId) {
+    public List<ChatMessage> getHistoryByWsSessionId(String sessionId) {
         return activeSession.getOrDefault(sessionId, new ArrayList<>());
+    }
+
+    public List<ChatMessage> getHistoryByInterviewId(String interviewId) {
+        String sessionId = interviewIdToSessionId.get(interviewId);
+        if(sessionId != null) {
+            return getHistoryByWsSessionId(sessionId);
+        }
+        return new ArrayList<>();
     }
 
     public void addMessage(String sessionId, ChatMessage chatMessage) {
