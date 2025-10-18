@@ -41,7 +41,7 @@ export default function DashboardPage() {
                             Start a New Mock Interview
                         </h2>
                         <p className="text-gray-400 mb-6">
-                            Customize your Interview to match the role you're
+                            Customize your Interview to match the role you&apos;re
                             applying for.
                         </p>
                         <button

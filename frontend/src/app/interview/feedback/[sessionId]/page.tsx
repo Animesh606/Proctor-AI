@@ -8,12 +8,20 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+interface Report {
+    technicalScore: number;
+    communicationScore: number;
+    overallSummary: string;
+    strengths: string[];
+    areasForImprovement: string[];
+}
+
 export default function FeedbackPage() {
     const params = useParams();
     const router = useRouter();
     const sessionId = params.sessionId as string;
     const { token } = useAuth();
-    const [report, setReport] = useState<any>(null);
+    const [report, setReport] = useState<Report | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -72,17 +80,17 @@ export default function FeedbackPage() {
                     Interview Feedback Report
                 </h1>
                 <p className="text-center mb-10 bg-gray-400">
-                    Here's a summary of your interview performance:
+                    Here&apos;s a summary of your interview performance:
                 </p>
 
                 <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
                     <div className="flex flex-col md:flex-row justify-around items-center mb-10 gap-8">
                         <ScoreCircle
-                            score={report.technicalScore}
+                            score={report?.technicalScore || 0}
                             label="Technical Skills"
                         />
                         <ScoreCircle
-                            score={report.communicationScore}
+                            score={report?.communicationScore || 0}
                             label="Communication"
                         />
                     </div>
@@ -91,18 +99,18 @@ export default function FeedbackPage() {
                         <h2 className="text-2xl font-semibold mb-3">
                             Overall Summary
                         </h2>
-                        <p className="text-gray-300 leading-relaxed">{report.overallSummary}</p>
+                        <p className="text-gray-300 leading-relaxed">{report?.overallSummary}</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <FeedbackSection
                             title="Strengths"
-                            items={report.strengths}
+                            items={report?.strengths || []}
                             colorClass="text-green-400"
                         />
                         <FeedbackSection
                             title="Areas for Improvement"
-                            items={report.areasForImprovement}
+                            items={report?.areasForImprovement || []}
                             colorClass="text-yellow-400"
                         />
                     </div>

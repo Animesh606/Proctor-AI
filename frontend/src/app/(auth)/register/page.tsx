@@ -10,7 +10,7 @@ export default function Register() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const { login, user } = useAuth();
     const router = useRouter();
 
@@ -20,13 +20,14 @@ export default function Register() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        setError(null);
 
         try {
             const data = await register({ username, email, password });
             login(data.token);
             router.push("/dashboard");
         } catch (error) {
+            console.error("Registration error:", error);
             setError("Registration failed. Please try again.");
         }
     };

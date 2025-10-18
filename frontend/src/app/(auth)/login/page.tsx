@@ -9,18 +9,19 @@ import Link from "next/link";
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
     const { login, user } = useAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError("");
+        setError(null);
         try {
             const data = await loginService({ email, password });
             login(data.token);
             router.push(`/dashboard`);
         } catch (error) {
+            console.error("Login error:", error);
             setError(
                 "Login failed. Please check your credentials and try again."
             );
@@ -81,7 +82,7 @@ export default function LoginPage() {
                     </button>
                 </form>
                 <p className="text-center">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
                         href="/register"
                         className="text-blue-400 hover:underline"

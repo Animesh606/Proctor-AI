@@ -40,7 +40,7 @@ export default function Home() {
                             icon={<Zap size={40} />}
                             title="Realistic Conversations"
                         >
-                            Our AI doesn't follow script. It listens,
+                            Our AI doesn&apos;t follow script. It listens,
                             understands context, and asks relevant follow-up
                             questions just like a real interviewer.
                         </FeatureCard>
@@ -50,7 +50,7 @@ export default function Home() {
                         >
                             Customize your mock interviews by tech stack
                             experience level, and duration to match the exact
-                            role you're targeting.
+                            role you&apos;re targeting.
                         </FeatureCard>
                         <FeatureCard
                             icon={<CheckCircle size={40} />}

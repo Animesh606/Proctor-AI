@@ -1,6 +1,8 @@
+import { RegisterData, LoginData, AuthResponse } from '../types';
+
 const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/auth`;
 
-export const register = async (userData: any) => {
+export const register = async (userData: RegisterData): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
@@ -14,7 +16,7 @@ export const register = async (userData: any) => {
     return response.json();
 }
 
-export const login = async (credentials: any) => {
+export const login = async (credentials: LoginData): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/authenticate`, {
         method: 'POST',
         headers: {

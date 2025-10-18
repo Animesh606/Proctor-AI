@@ -1,18 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+    SpeechRecognition as SpeechRecognitionAPI,
+    SpeechRecognitionEvent,
+} from "@/types";
 
 const SpeechRecognition =
     typeof window !== "undefined" &&
-    ((window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition);
+    (window.SpeechRecognition || window.webkitSpeechRecognition);
 
 export const useSpeechRecognition = (
     onTranscriptReady: (transcript: string) => void
 ) => {
     const [isListening, setIsListening] = useState(false);
     const [interimTranscript, setInterimTranscript] = useState("");
-    const recognition = useRef<any>(null);
+    const recognition = useRef<SpeechRecognitionAPI | null>(null);
     const finalTranscriptRef = useRef<string>("");
 
     useEffect(() => {
@@ -22,31 +25,33 @@ export const useSpeechRecognition = (
         }
 
         recognition.current = new SpeechRecognition();
-        recognition.current.continuous = true;
-        recognition.current.interimResults = true;
-        recognition.current.lang = "en-US";
+        if (recognition.current) {
+            recognition.current.continuous = true;
+            recognition.current.interimResults = true;
+            recognition.current.lang = "en-US";
 
-        recognition.current.onresult = (event: any) => {
-            let tempInterim = "";
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                if (event.results[i].isFinal) {
-                    finalTranscriptRef.current +=
-                        event.results[i][0].transcript;
-                } else {
-                    tempInterim += event.results[i][0].transcript;
+            recognition.current.onresult = (event: SpeechRecognitionEvent) => {
+                let tempInterim = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        finalTranscriptRef.current +=
+                            event.results[i][0].transcript;
+                    } else {
+                        tempInterim += event.results[i][0].transcript;
+                    }
                 }
-            }
-            setInterimTranscript(tempInterim);
-        };
+                setInterimTranscript(tempInterim);
+            };
 
-        recognition.current.onerror = (event: any) => {
-            console.error("Speech recognition error: ", event.error);
-            setIsListening(false);
-        };
+            recognition.current.onerror = (event: Event) => {
+                console.error("Speech recognition error: ", event);
+                setIsListening(false);
+            };
 
-        recognition.current.onend = () => {
-            setIsListening(false);
-        };
+            recognition.current.onend = () => {
+                setIsListening(false);
+            };
+        }
 
         return () => {
             recognition.current?.stop();
