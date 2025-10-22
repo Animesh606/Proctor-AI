@@ -3,6 +3,7 @@ package com.proctorai.backend.controller;
 import com.proctorai.backend.dto.ChatMessage;
 import com.proctorai.backend.dto.CreateInterviewRequest;
 import com.proctorai.backend.dto.CreateInterviewResponse;
+import com.proctorai.backend.dto.InterviewHistoryDto;
 import com.proctorai.backend.entity.InterviewSession;
 import com.proctorai.backend.repository.InterviewSessionRepository;
 import com.proctorai.backend.service.GeminiServiceClient;
@@ -15,9 +16,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -34,6 +37,12 @@ public class InterviewController {
     @PostMapping("/api/interviews")
     public ResponseEntity<CreateInterviewResponse> saveInterviewSession(@RequestBody CreateInterviewRequest request) {
         return ResponseEntity.ok(interviewService.createInterviewSession(request));
+    }
+
+    @GetMapping("/api/interviews/history")
+    public ResponseEntity<List<InterviewHistoryDto>> getInterviewHistory() {
+        List<InterviewHistoryDto> history = interviewService.getInterviewHistoryForCurrentUser();
+        return ResponseEntity.ok(history);
     }
 
     @MessageMapping("/interview.start")

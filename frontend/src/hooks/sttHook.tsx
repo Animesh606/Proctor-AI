@@ -52,11 +52,7 @@ export const useSpeechRecognition = (
                 setIsListening(false);
             };
         }
-
-        return () => {
-            recognition.current?.stop();
-        };
-    }, []);
+    }, [onTranscriptReady]);
 
     const startListening = () => {
         if (recognition.current && !isListening) {
@@ -71,7 +67,9 @@ export const useSpeechRecognition = (
         if (recognition.current && isListening) {
             recognition.current.stop();
             setIsListening(false);
-            onTranscriptReady(finalTranscriptRef.current);
+            onTranscriptReady(finalTranscriptRef.current + interimTranscript);
+            finalTranscriptRef.current = "";
+            setInterimTranscript("");
         }
     };
 

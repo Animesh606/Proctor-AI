@@ -29,6 +29,14 @@ export interface AuthContextType {
     logout: () => void;
 }
 
+// Interview history related interfaces
+export interface InterviewHistoryItem {
+    sessionId: string;
+    interviewType: string;
+    experienceLevel: string;
+    createdAt: string;
+}
+
 // Speech Recognition related interfaces
 
 interface SpeechRecognitionResult {

@@ -80,10 +80,39 @@ export default function InterviewSetupPage() {
                                 }
                                 className="w-full p-2 rounded bg-gray-600"
                             >
+                                <option value="TECHNICAL">
+                                    Choose Tech Stack
+                                </option>
                                 <option value="JAVA_BACKEND">
                                     Java Backend
                                 </option>
+                                <option value="SPRING">Spring Framework</option>
                                 <option value="MERN_STACK">MERN Stack</option>
+                                <option value="REACT">React</option>
+                                <option value="NODE_JS">Node.js</option>
+                                <option value="NEXT_JS">Next.js</option>
+                                <option value="FLASK">Flask</option>
+                                <option value="DATA_SCIENCE">
+                                    Data Science
+                                </option>
+                                <option value="TYPESCRIPT">TypeScript</option>
+                                <option value="PYTHON">Python</option>
+                                <option value="GO">Go</option>
+                                <option value="JAVASCRIPT">JavaScript</option>
+                                <option value="C_SHARP">C#</option>
+                                <option value="PHP">PHP</option>
+                                <option value="RUBY">Ruby</option>
+                                <option value="SWIFT">Swift</option>
+                                <option value="KOTLIN">Kotlin</option>
+                                <option value="DART">Dart</option>
+                                <option value="GRAPHQL">GraphQL</option>
+                                <option value="WEB_DEVELOPMENT">
+                                    Web Development
+                                </option>
+                                <option value="DOCKER">Docker</option>
+                                <option value="KUBERNETES">Kubernetes</option>
+                                <option value="AWS">AWS</option>
+                                <option value="DEVOPS">Devops</option>
                                 <option value="DATA_STRUCTURES">
                                     Data Structures & Algos
                                 </option>
@@ -123,6 +152,7 @@ export default function InterviewSetupPage() {
                             <option value={15}>15 minutes</option>
                             <option value={30}>30 minutes</option>
                             <option value={45}>45 minutes</option>
+                            <option value={60}>1 hour</option>
                         </select>
                     </OptionCard>
 
@@ -134,7 +164,6 @@ export default function InterviewSetupPage() {
                             }
                             className="w-full p-2 rounded bg-gray-600"
                             rows={3}
-                            // autoFocus={true}
                             placeholder="e.g., Focus on system design, algorithms, etc."
                         />
                     </OptionCard>

@@ -91,9 +91,7 @@ export default function InterviewRoom() {
                 client.subscribe(`/topic/interview/${sessionId}`, (message) => {
                     const msg: ChatMessage = JSON.parse(message.body);
                     setMessages((prev) => [...prev, msg]);
-                    speak(msg.text, () => {
-                        if (!isListening) startListening();
-                    });
+                    speak(msg.text, startListening);
                 });
 
                 client.send("/app/interview.start", {}, "");
@@ -107,14 +105,7 @@ export default function InterviewRoom() {
             client.connect({}, onConnect, onError);
         });
 
-        return () => {
-            console.log("Disconnecting...");
-            cancelSpeech();
-            if (stompClient.current?.connected) {
-                stompClient.current.disconnect();
-            }
-        };
-    }, [sessionId, token, speak, cancelSpeech, startListening, isListening]);
+    }, [sessionId, token, speak, cancelSpeech, startListening]);
 
     const renderContent = () => {
         switch (status) {
