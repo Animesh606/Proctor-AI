@@ -13,6 +13,7 @@ export interface LoginData {
 
 export interface AuthResponse {
     token: string;
+    message?: string;
 }
 
 export interface User {

@@ -1,98 +1,165 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { register } from "@/services/authService";
+import { register, verifyOtp } from "@/services/authService";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+type RegistrationStep = "DETAILS" | "OTP";
+
 export default function Register() {
+    const [step, setStep] = useState<RegistrationStep>("DETAILS");
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [otp, setOtp] = useState("");
+    const [message, setMessage] = useState("");
     const [error, setError] = useState<string | null>(null);
-    const { login, user } = useAuth();
+    const { login: authLogin, user } = useAuth();
     const router = useRouter();
 
     if (user) {
         router.push("/dashboard");
     }
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleRegistrationSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+        setMessage("");
+
+        try {
+            const data = await register({ username, email, password });
+            setMessage(data.message || "OTP sent to your email.");
+            setStep("OTP");
+        } catch (error) {
+            setError("Registration failed. Email might already exist.");
+        }
+    };
+
+    const handleOtpSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
         try {
-            const data = await register({ username, email, password });
-            login(data.token);
+            const data = await verifyOtp({ email, otp });
+            authLogin(data.token);
             router.push("/dashboard");
         } catch (error) {
-            console.error("Registration error:", error);
-            setError("Registration failed. Please try again.");
+            setError("Invalid or expired OTP. Please try again.");
         }
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
             <div className="w-full max-w-md p-8 space-y-8 bg-gray-800 rounded-lg shadow-lg">
-                <h1 className="text-2xl font-bold text-center">
-                    Register for Proctor AI
-                </h1>
-                <form onSubmit={handleSubmit}>
-                    {error && (
-                        <p className="text-red-500 text-center">{error}</p>
-                    )}
-                    <div>
-                        <label
-                            className="block text-sm font-medium"
-                            htmlFor="username"
+                {step === "DETAILS" && (
+                    <>
+                        <h1 className="text-2xl font-bold text-center">
+                            Register for Proctor AI
+                        </h1>
+                        <form
+                            onSubmit={handleRegistrationSubmit}
+                            className="space-y-6"
                         >
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            id="username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                            className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full px-3 py-2 mt-1 text-white bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="w-full px-4 py-2 mt-4 font-bold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        Register
-                    </button>
-                </form>
-                <p className="text-center">
-                    Already have an account?{" "}
-                    <Link href="/login" className="text-blue-500">
-                        Login
-                    </Link>
-                </p>
+                            {error && (
+                                <p className="text-red-500 text-center">
+                                    {error}
+                                </p>
+                            )}
+                            <div>
+                                <label className="block text-sm font-medium">
+                                    Username
+                                </label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) =>
+                                        setUsername(e.target.value)
+                                    }
+                                    required
+                                    className="input-field"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium">
+                                    Email
+                                </label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    className="input-field"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium">
+                                    Password
+                                </label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    required
+                                    className="input-field"
+                                />
+                            </div>
+                            <button type="submit" className="button-primary">
+                                Register
+                            </button>
+                        </form>
+                        <p className="text-center text-sm text-gray-400">
+                            Already have an account?
+                            <Link href="/login" className="link">
+                                Login here
+                            </Link>
+                        </p>
+                    </>
+                )}
+
+                {step === "OTP" && (
+                    <>
+                        <h1 className="text-2xl font-bold text-center">
+                            Verify Your Email
+                        </h1>
+                        <p className="text-center text-gray-400">{message}</p>
+                        <form onSubmit={handleOtpSubmit} className="space-y-6">
+                            {error && (
+                                <p className="text-red-500 text-center">
+                                    {error}
+                                </p>
+                            )}
+                            <div>
+                                <label className="block text-sm font-medium">
+                                    Enter OTP
+                                </label>
+                                <input
+                                    type="text"
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    required
+                                    maxLength={6}
+                                    className="input-field text-center tracking-[1em]" // Style for OTP input
+                                />
+                            </div>
+                            <button type="submit" className="button-primary">
+                                Verify OTP & Login
+                            </button>
+                        </form>
+                        <p className="text-center text-sm text-gray-400">
+                            Entered wrong email?{" "}
+                            <button
+                                onClick={() => setStep("DETAILS")}
+                                className="link"
+                            >
+                                Go Back
+                            </button>
+                        </p>
+                    </>
+                )}
             </div>
         </div>
     );

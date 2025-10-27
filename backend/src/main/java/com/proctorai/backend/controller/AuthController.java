@@ -1,8 +1,6 @@
 package com.proctorai.backend.controller;
 
-import com.proctorai.backend.dto.AuthRequest;
-import com.proctorai.backend.dto.AuthResponse;
-import com.proctorai.backend.dto.RegisterRequest;
+import com.proctorai.backend.dto.*;
 import com.proctorai.backend.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +16,13 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<RegistrationPendingResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<AuthResponse> verifyOtp(@RequestBody VerifyOtpRequest request) {
+        return ResponseEntity.ok(authService.verifyOtp(request));
     }
 
     @PostMapping("/authenticate")
