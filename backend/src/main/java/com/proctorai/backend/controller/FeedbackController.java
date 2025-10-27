@@ -1,6 +1,6 @@
 package com.proctorai.backend.controller;
 
-import com.proctorai.backend.dto.ChatMessage;
+import com.proctorai.backend.dto.interviewDtos.ChatMessage;
 import com.proctorai.backend.entity.FeedbackReport;
 import com.proctorai.backend.repository.FeedbackReportRepository;
 import com.proctorai.backend.service.FeedbackService;

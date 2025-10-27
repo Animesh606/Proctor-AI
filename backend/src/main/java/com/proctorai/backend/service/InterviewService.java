@@ -1,8 +1,8 @@
 package com.proctorai.backend.service;
 
-import com.proctorai.backend.dto.CreateInterviewRequest;
-import com.proctorai.backend.dto.CreateInterviewResponse;
-import com.proctorai.backend.dto.InterviewHistoryDto;
+import com.proctorai.backend.dto.interviewDtos.CreateInterviewRequest;
+import com.proctorai.backend.dto.interviewDtos.CreateInterviewResponse;
+import com.proctorai.backend.dto.interviewDtos.InterviewHistoryDto;
 import com.proctorai.backend.entity.InterviewSession;
 import com.proctorai.backend.entity.User;
 import com.proctorai.backend.repository.InterviewSessionRepository;

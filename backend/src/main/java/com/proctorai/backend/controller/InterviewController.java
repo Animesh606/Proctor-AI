@@ -1,9 +1,9 @@
 package com.proctorai.backend.controller;
 
-import com.proctorai.backend.dto.ChatMessage;
-import com.proctorai.backend.dto.CreateInterviewRequest;
-import com.proctorai.backend.dto.CreateInterviewResponse;
-import com.proctorai.backend.dto.InterviewHistoryDto;
+import com.proctorai.backend.dto.interviewDtos.ChatMessage;
+import com.proctorai.backend.dto.interviewDtos.CreateInterviewRequest;
+import com.proctorai.backend.dto.interviewDtos.CreateInterviewResponse;
+import com.proctorai.backend.dto.interviewDtos.InterviewHistoryDto;
 import com.proctorai.backend.entity.InterviewSession;
 import com.proctorai.backend.repository.InterviewSessionRepository;
 import com.proctorai.backend.service.GeminiServiceClient;
@@ -77,7 +77,7 @@ public class InterviewController {
 
         if (sessionId == null || interviewIdStr == null) return;
 
-        sessionManager.addMessage(sessionId, new ChatMessage("user", chatMessage.getText()));
+        sessionManager.addMessage(sessionId, new ChatMessage("user", chatMessage.text()));
         sendQuestionToUser(sessionId, interviewIdStr);
     }
 

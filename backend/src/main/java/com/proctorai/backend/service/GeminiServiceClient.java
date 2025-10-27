@@ -1,6 +1,6 @@
 package com.proctorai.backend.service;
 
-import com.proctorai.backend.dto.ChatMessage;
+import com.proctorai.backend.dto.interviewDtos.ChatMessage;
 import com.proctorai.backend.dto.gemini.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,8 +25,8 @@ public class GeminiServiceClient {
     public Mono<String> getNextQuestion(List<ChatMessage> history) {
         List<Content> geminiContents = history.stream()
                 .map(chatMessage -> {
-                    String role = "user".equalsIgnoreCase(chatMessage.getFrom()) ? "user" : "model";
-                    return new Content(role, List.of(new Part(chatMessage.getText())));
+                    String role = "user".equalsIgnoreCase(chatMessage.from()) ? "user" : "model";
+                    return new Content(role, List.of(new Part(chatMessage.text())));
                 })
                 .toList();
         GeminiRequest request = new GeminiRequest(geminiContents);

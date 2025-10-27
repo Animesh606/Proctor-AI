@@ -2,7 +2,7 @@ package com.proctorai.backend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.proctorai.backend.dto.ChatMessage;
+import com.proctorai.backend.dto.interviewDtos.ChatMessage;
 import com.proctorai.backend.dto.gemini.FeedbackResponse;
 import com.proctorai.backend.entity.FeedbackReport;
 import com.proctorai.backend.entity.InterviewSession;
@@ -63,7 +63,7 @@ public class FeedbackService {
 
     private String buildFeedbackPrompt(InterviewSession session, List<ChatMessage> transcript) {
         String transcriptString = transcript.stream()
-                .map(msg -> msg.getFrom() + ": " + msg.getText())
+                .map(msg -> msg.from() + ": " + msg.text())
                 .collect(Collectors.joining("\n"));
 
         return String.format(

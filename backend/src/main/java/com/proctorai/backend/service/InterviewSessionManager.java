@@ -1,6 +1,6 @@
 package com.proctorai.backend.service;
 
-import com.proctorai.backend.dto.ChatMessage;
+import com.proctorai.backend.dto.interviewDtos.ChatMessage;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.proctorai.backend.dto;
+package com.proctorai.backend.dto.authDtos;
 
 public record VerifyOtpRequest(
         String email,

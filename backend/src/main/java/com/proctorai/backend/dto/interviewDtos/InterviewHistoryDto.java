@@ -1,4 +1,4 @@
-package com.proctorai.backend.dto;
+package com.proctorai.backend.dto.interviewDtos;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

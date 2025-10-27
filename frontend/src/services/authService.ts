@@ -57,3 +57,29 @@ export const login = async (credentials: LoginData): Promise<AuthResponse> => {
     }
     return response.json();
 }
+
+export const requestPasswordReset = async (email: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/forgot-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw new Error('Password reset request failed');
+    }
+}
+
+export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/reset-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, newPassword }),
+    });
+    if (!response.ok) {
+        throw new Error('Password reset failed. Invalid or expired token.');
+    }
+}

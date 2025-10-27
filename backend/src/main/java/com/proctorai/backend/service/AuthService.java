@@ -1,9 +1,13 @@
 package com.proctorai.backend.service;
 
-import com.proctorai.backend.dto.*;
+import com.proctorai.backend.dto.authDtos.*;
+import com.proctorai.backend.entity.PasswordResetToken;
 import com.proctorai.backend.entity.User;
+import com.proctorai.backend.repository.PasswordResetTokenRepository;
 import com.proctorai.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,10 +29,15 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final OtpService otpService;
     private final EmailService emailService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final ResourcePatternResolver resourcePatternResolver;
+
+    @Value("${application.client.url}")
+    private String clientUrl;
 
     @Transactional
     public RegistrationPendingResponse register(RegisterRequest request) {
-        Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
+        Optional<User> existingUser = userRepository.findByEmail(request.email());
         if (existingUser.isPresent() && existingUser.get().isEnabled()) {
             throw new IllegalArgumentException("Email already registered and verified.");
         }
@@ -35,21 +45,21 @@ public class AuthService {
         User newUser;
         if (existingUser.isPresent()) {
             newUser = existingUser.get();
-            newUser.setUsername(request.getUsername());
-            newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+            newUser.setUsername(request.username());
+            newUser.setPassword(passwordEncoder.encode(request.password()));
         } else {
             newUser = User.builder()
-                    .username(request.getUsername())
-                    .email(request.getEmail())
-                    .password(passwordEncoder.encode(request.getPassword()))
+                    .username(request.username())
+                    .email(request.email())
+                    .password(passwordEncoder.encode(request.password()))
                     .enabled(false)
                     .build();
         }
 
         userRepository.save(newUser);
 
-        String otp = otpService.generateOtp(request.getEmail());
-        emailService.sendOtpEmail(request.getEmail(), otp);
+        String otp = otpService.generateOtp(request.email());
+        emailService.sendOtpEmail(request.email(), otp);
 
         return new RegistrationPendingResponse("OTP sent to your email. Please verify to complete registration.");
     }
@@ -79,20 +89,18 @@ public class AuthService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
+                            request.email(),
+                            request.password()
                     )
             );
         } catch (DisabledException e) {
             throw new DisabledException("Account not verified. Please check your email for the OTP or register again.");
         }
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.email())
                 .orElseThrow();
         String token = jwtService.generateToken(user);
-        return AuthResponse.builder()
-                .token(token)
-                .build();
+        return new AuthResponse(token);
     }
 
     @Transactional(readOnly = true)
@@ -108,5 +116,32 @@ public class AuthService {
         emailService.sendOtpEmail(email, otp);
 
         System.out.println("Resent OTP for email: " + email);
+    }
+
+    @Transactional
+    public void createPasswordResetTokenForUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email " + email));
+
+        passwordResetTokenRepository.findByUser(user).ifPresent(passwordResetTokenRepository::delete);
+
+        String token = UUID.randomUUID().toString();
+        PasswordResetToken myToken = new PasswordResetToken(token, user);
+        passwordResetTokenRepository.save(myToken);
+        emailService.sendResetPasswordEmail(user.getEmail(), token, clientUrl);
+    }
+
+    public Optional<User> getUserByPasswordResetToken(String token) {
+        return passwordResetTokenRepository.findByToken(token)
+                .filter(t -> !t.isExpired())
+                .map(PasswordResetToken::getUser);
+    }
+
+    @Transactional
+    public void changeUserPassword(User user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        passwordResetTokenRepository.findByUser(user).ifPresent(passwordResetTokenRepository::delete);
     }
 }
