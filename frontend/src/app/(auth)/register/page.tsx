@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
-import { register, verifyOtp } from "@/services/authService";
+import { register, verifyOtp, resendOtp } from "@/services/authService";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type RegistrationStep = "DETAILS" | "OTP";
 
@@ -18,6 +18,9 @@ export default function Register() {
     const [error, setError] = useState<string | null>(null);
     const { login: authLogin, user } = useAuth();
     const router = useRouter();
+    const [isResending, setIsResending] = useState(false);
+    const [resendCooldown, setResendCooldown] = useState(60);
+    const [isCooldownActive, setIsCooldownActive] = useState(false);
 
     if (user) {
         router.push("/dashboard");
@@ -49,6 +52,40 @@ export default function Register() {
             setError("Invalid or expired OTP. Please try again.");
         }
     };
+
+    const handleResendOtp = async () => {
+        if (isCooldownActive) return;
+
+        setError(null);
+        setMessage("");
+        setIsResending(true);
+        setIsCooldownActive(true);
+        setResendCooldown(60);
+        try {
+            await resendOtp(email);
+            setMessage("OTP resent successfully.");
+        } catch (error) {
+            setError("Failed to resend OTP.");
+            setIsCooldownActive(false);
+            setResendCooldown(0);
+        } finally {
+            setIsResending(false);
+        }
+    };
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+        if (isCooldownActive && resendCooldown > 0) {
+            interval = setInterval(() => {
+                setResendCooldown((prev) => prev - 1);
+            }, 1000);
+        } else if (resendCooldown === 0) {
+            setIsCooldownActive(false);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [isCooldownActive, resendCooldown]);
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -149,8 +186,20 @@ export default function Register() {
                                 Verify OTP & Login
                             </button>
                         </form>
+                        <div className="text-center text-sm text-gray-400">
+                            Didn't receive the OTP?
+                            <button
+                                onClick={handleResendOtp}
+                                className="link disabled:text-gray-500 disabled:cursor-not-allowed"
+                                disabled={isResending || isCooldownActive}
+                            >
+                                {isResending ? "Sending..." : isCooldownActive
+                                    ? `Resend OTP in ${resendCooldown}s`
+                                    : "Resend OTP"}
+                            </button>
+                        </div>
                         <p className="text-center text-sm text-gray-400">
-                            Entered wrong email?{" "}
+                            Entered wrong email?
                             <button
                                 onClick={() => setStep("DETAILS")}
                                 className="link"

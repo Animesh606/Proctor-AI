@@ -94,4 +94,19 @@ public class AuthService {
                 .token(token)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public void resendOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Cannot resend OTP: User not found with email " + email));
+
+        if (user.isEnabled()) {
+            throw new IllegalStateException("Account is already verified.");
+        }
+
+        String otp = otpService.generateOtp(email);
+        emailService.sendOtpEmail(email, otp);
+
+        System.out.println("Resent OTP for email: " + email);
+    }
 }

@@ -31,6 +31,19 @@ export const verifyOtp = async (data: { email: string; otp: string }): Promise<A
     return response.json();
 }
 
+export const resendOtp = async (email: string): Promise<void> => {
+    const response = await fetch(`${API_URL}/resend-otp`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+    if (!response.ok) {
+        throw new Error('Resend OTP failed');
+    }
+}
+
 export const login = async (credentials: LoginData): Promise<AuthResponse> => {
     const response = await fetch(`${API_URL}/authenticate`, {
         method: 'POST',
