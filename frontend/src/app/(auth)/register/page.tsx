@@ -187,7 +187,7 @@ export default function Register() {
                             </button>
                         </form>
                         <div className="text-center text-sm text-gray-400">
-                            Didn't receive the OTP?
+                            Didn&apos;t receive the OTP?
                             <button
                                 onClick={handleResendOtp}
                                 className="link disabled:text-gray-500 disabled:cursor-not-allowed"

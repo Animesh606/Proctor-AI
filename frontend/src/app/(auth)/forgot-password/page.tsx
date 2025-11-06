@@ -34,7 +34,7 @@ export default function ForgotPassword() {
                     Forgot Your Password?
                 </h1>
                 <p className="text-center text-gray-400">
-                    Enter your email address below, and we'll send you a link to
+                    Enter your email address below, and we&apos;ll send you a link to
                     reset your password.
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-6">
